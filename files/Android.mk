@@ -46,7 +46,7 @@ LOCAL_SRC_FILES := \
     source/convert_jpeg.cc      \
     source/mjpeg_validate.cc
 
-common_CFLAGS := -Wall -fexceptions -DHAVE_JPEG
+common_CFLAGS := -Wall -fexceptions -DHAVE_JPEG -Wno-unused-parameter
 LOCAL_CFLAGS += $(common_CFLAGS)
 LOCAL_SHARED_LIBRARIES := libjpeg
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
