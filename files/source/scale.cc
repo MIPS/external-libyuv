@@ -98,6 +98,44 @@ void ScaleFilterRows_NEON(uint8* dst_ptr,
                           const uint8* src_ptr, ptrdiff_t src_stride,
                           int dst_width, int source_y_fraction);
 
+#elif defined(LIBYUV_DSP)
+#define HAS_SCALEROWDOWN2_DSPR2
+// Note - not static due to reuse in convert for 444 to 420.
+void ScaleRowDown2_DSPR2(const uint8* src_ptr, ptrdiff_t /* src_stride */,
+                         uint8* dst, int dst_width);
+
+void ScaleRowDown2Int_DSPR2(const uint8* src_ptr, ptrdiff_t src_stride,
+                            uint8* dst, int dst_width);
+
+#elif defined(LIBYUV_DSPR2)
+#define HAS_SCALEROWDOWN4_DSPR2
+void ScaleRowDown4_DSPR2(const uint8* src_ptr, ptrdiff_t /* src_stride */,
+                         uint8* dst_ptr, int dst_width);
+void ScaleRowDown4Int_DSPR2(const uint8* src_ptr, ptrdiff_t src_stride,
+                            uint8* dst_ptr, int dst_width);
+#define HAS_SCALEROWDOWN34_DSPR2
+void ScaleRowDown34_DSPR2(const uint8* src_ptr,
+                          ptrdiff_t /* src_stride */,
+                          uint8* dst_ptr, int dst_width);
+void ScaleRowDown34_0_Int_DSPR2(const uint8* src_ptr,
+                                ptrdiff_t src_stride,
+                                uint8* dst_ptr, int dst_width);
+void ScaleRowDown34_1_Int_DSPR2(const uint8* src_ptr,
+                                ptrdiff_t src_stride,
+                                uint8* dst_ptr, int dst_width);
+#define HAS_SCALEROWDOWN38_DSPR2
+// 32 -> 12
+void ScaleRowDown38_DSPR2(const uint8* src_ptr,
+                          ptrdiff_t /* src_stride */,
+                          uint8* dst_ptr, int dst_width);
+// 32x3 -> 12x1
+void ScaleRowDown38_3_Int_DSPR2(const uint8* src_ptr,
+                                ptrdiff_t src_stride,
+                                uint8* dst_ptr, int dst_width);
+// 32x2 -> 12x1
+void ScaleRowDown38_2_Int_DSPR2(const uint8* src_ptr,
+                                ptrdiff_t src_stride,
+                                uint8* dst_ptr, int dst_width);
 /**
  * SSE2 downscalers with interpolation.
  *
@@ -2314,6 +2352,14 @@ static void ScalePlaneDown2(int /* src_width */, int /* src_height */,
     }
   }
 #endif
+#if defined(HAS_SCALEROWDOWN2_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && IS_ALIGNED(src_ptr, 4) &&
+      IS_ALIGNED(src_stride, 4) && IS_ALIGNED(dst_ptr, 4) &&
+      IS_ALIGNED(dst_stride, 4)) {
+    ScaleRowDown2 = filtering ?
+        ScaleRowDown2Int_DSPR2 : ScaleRowDown2_DSPR2;
+  }
+#endif
 
   // TODO(fbarchard): Loop through source height to allow odd height.
   for (int y = 0; y < dst_height; ++y) {
@@ -2347,6 +2393,14 @@ static void ScalePlaneDown4(int /* src_width */, int /* src_height */,
       IS_ALIGNED(dst_width, 8) &&
       IS_ALIGNED(src_ptr, 16) && IS_ALIGNED(src_stride, 16)) {
     ScaleRowDown4 = filtering ? ScaleRowDown4Int_SSE2 : ScaleRowDown4_SSE2;
+  }
+#endif
+#if defined(HAS_SCALEROWDOWN4_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && IS_ALIGNED(row_stride, 4) &&
+      IS_ALIGNED(src_ptr, 4) && IS_ALIGNED(src_stride, 4) &&
+      IS_ALIGNED(dst_ptr, 4) && IS_ALIGNED(dst_stride, 4)) {
+    ScaleRowDown4 = filtering ?
+        ScaleRowDown4Int_DSPR2 : ScaleRowDown4_DSPR2;
   }
 #endif
 
@@ -2441,6 +2495,19 @@ static void ScalePlaneDown34(int /* src_width */, int /* src_height */,
     }
   }
 #endif
+#if defined(HAS_SCALEROWDOWN34_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && (dst_width % 24 == 0) &&
+      IS_ALIGNED(src_ptr, 4) && IS_ALIGNED(src_stride, 4) &&
+      IS_ALIGNED(dst_ptr, 4) && IS_ALIGNED(dst_stride, 4)) {
+    if (!filtering) {
+      ScaleRowDown34_0 = ScaleRowDown34_DSPR2;
+      ScaleRowDown34_1 = ScaleRowDown34_DSPR2;
+    } else {
+      ScaleRowDown34_0 = ScaleRowDown34_0_Int_DSPR2;
+      ScaleRowDown34_1 = ScaleRowDown34_1_Int_DSPR2;
+    }
+  }
+#endif
 
   for (int y = 0; y < dst_height - 2; y += 3) {
     ScaleRowDown34_0(src_ptr, src_stride, dst_ptr, dst_width);
@@ -2519,6 +2586,19 @@ static void ScalePlaneDown38(int /* src_width */, int /* src_height */,
     } else {
       ScaleRowDown38_3 = ScaleRowDown38_3_Int_SSSE3;
       ScaleRowDown38_2 = ScaleRowDown38_2_Int_SSSE3;
+    }
+  }
+#endif
+#if defined(HAS_SCALEROWDOWN38_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && (dst_width % 12 == 0) &&
+      IS_ALIGNED(src_ptr, 4) && IS_ALIGNED(src_stride, 4) &&
+      IS_ALIGNED(dst_ptr, 4) && IS_ALIGNED(dst_stride, 4)) {
+    if (!filtering) {
+      ScaleRowDown38_3 = ScaleRowDown38_DSPR2;
+      ScaleRowDown38_2 = ScaleRowDown38_DSPR2;
+    } else {
+      ScaleRowDown38_3 = ScaleRowDown38_3_Box_DSPR2;
+      ScaleRowDown38_2 = ScaleRowDown38_2_Box_DSPR2;
     }
   }
 #endif

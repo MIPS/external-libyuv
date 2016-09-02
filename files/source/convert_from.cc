@@ -881,6 +881,15 @@ int I420ToRGBA(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+#if defined(HAS_I422TORGBAROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && IS_ALIGNED(width, 4) &&
+      IS_ALIGNED(src_y, 4) && IS_ALIGNED(src_stride_y, 4) &&
+      IS_ALIGNED(src_u, 2) && IS_ALIGNED(src_stride_u, 2) &&
+      IS_ALIGNED(src_v, 2) && IS_ALIGNED(src_stride_v, 2) &&
+      IS_ALIGNED(dst_rgba, 4) && IS_ALIGNED(dst_stride_rgba, 4)) {
+    I422ToRGBARow = I422ToRGBARow_DSPR2;
+  }
+#endif
 
   for (int y = 0; y < height; ++y) {
     I422ToRGBARow(src_y, src_u, src_v, dst_rgba, width);
@@ -1168,6 +1177,14 @@ int I420ToARGB4444(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+// #if defined(HAS_I422TOARGB4444ROW_DSPR2)
+//   if (TestCpuFlag(kCpuHasDSPR2)) {
+//     I422ToARGB4444Row = I422ToARGB4444Row_Any_DSPR2;
+//     if (IS_ALIGNED(width, 4)) {
+//       I422ToARGB4444Row = I422ToARGB4444Row_DSPR2;
+//     }
+//   }
+// #endif
 
   for (int y = 0; y < height; ++y) {
     I422ToARGBRow(src_y, src_u, src_v, row, width);

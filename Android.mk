@@ -51,6 +51,61 @@ ifeq ($(ARCH_ARM_HAVE_NEON),true)
         files/source/scale_neon.cc
 endif
 
+ifeq ($(TARGET_ARCH_VARIANT),mips32r2dspr2-fp)
+    LOCAL_CFLAGS_mips += -DLIBYUV_MIPS \
+                         -DLIBYUV_DSP  \
+                         -DLIBYUV_DSPR2
+    LOCAL_SRC_FILES_mips += \
+        files/source/rotate_mips.cc \
+        files/source/row_mips.cc \
+        files/source/scale_mips.cc
+else ifeq ($(TARGET_ARCH_VARIANT),mips32r2dsp-fp)
+    LOCAL_CFLAGS_mips += -DLIBYUV_MIPS \
+                         -DLIBYUV_DSP
+    LOCAL_SRC_FILES_mips += \
+        files/source/rotate_mips.cc \
+        files/source/row_mips.cc \
+        files/source/scale_mips.cc
+else
+    LOCAL_CFLAGS_mips += -DLIBYUV_MIPS
+
+    LOCAL_SRC_FILES_mips += \
+        files/source/rotate_mips.cc \
+        files/source/row_mips.cc \
+        files/source/scale_mips.cc
+endif
+
 LOCAL_MODULE := libyuv_static
 
 include $(BUILD_STATIC_LIBRARY)
+
+#####################################################################
+# test utility: libyuv_unittest
+#####################################################################
+
+include $(CLEAR_VARS)
+
+LOCAL_CPP_EXTENSION := .cc
+
+common_CFLAGS := -Wall -fexceptions
+
+LOCAL_CFLAGS += $(common_CFLAGS)
+
+LOCAL_SRC_FILES := \
+    files/unit_test/compare_test.cc \
+    files/unit_test/cpu_test.cc \
+    files/unit_test/planar_test.cc \
+    files/unit_test/rotate_argb_test.cc \
+    files/unit_test/rotate_test.cc \
+    files/unit_test/scale_argb_test.cc \
+    files/unit_test/scale_test.cc \
+    files/unit_test/unit_test.cc
+
+LOCAL_C_INCLUDES := \
+    files/unit_test/unit_test.h
+
+LOCAL_STATIC_LIBRARIES := libyuv_static
+
+LOCAL_MODULE := libyuv_unittest
+
+include $(BUILD_NATIVE_TEST)

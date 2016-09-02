@@ -96,6 +96,13 @@ void MirrorPlane(const uint8* src_y, int src_stride_y,
 #endif
   }
 #endif
+#if defined(HAS_MIRRORROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) &&
+      IS_ALIGNED(src_y, 4) && IS_ALIGNED(src_stride_y, 4) &&
+      IS_ALIGNED(dst_y, 4) && IS_ALIGNED(dst_stride_y, 4)) {
+    MirrorRow = MirrorRow_DSPR2;
+  }
+#endif
 
   // Mirror plane
   for (int y = 0; y < height; ++y) {
@@ -571,6 +578,15 @@ int I422ToRGBA(const uint8* src_y, int src_stride_y,
         I422ToRGBARow = I422ToRGBARow_SSSE3;
       }
     }
+  }
+#endif
+#if defined(HAS_I422TORGBAROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && IS_ALIGNED(width, 4) &&
+      IS_ALIGNED(src_y, 4) && IS_ALIGNED(src_stride_y, 4) &&
+      IS_ALIGNED(src_u, 2) && IS_ALIGNED(src_stride_u, 2) &&
+      IS_ALIGNED(src_v, 2) && IS_ALIGNED(src_stride_v, 2) &&
+      IS_ALIGNED(dst_rgba, 4) && IS_ALIGNED(dst_stride_rgba, 4)) {
+    I422ToRGBARow = I422ToRGBARow_DSPR2;
   }
 #endif
 

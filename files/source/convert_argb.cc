@@ -384,6 +384,11 @@ int RAWToARGB(const uint8* src_raw, int src_stride_raw,
     RAWToARGBRow = RAWToARGBRow_SSSE3;
   }
 #endif
+#if defined(HAS_RAWTOARGBROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+      RAWToARGBRow = RAWToARGBRow_DSPR2;
+  }
+#endif
 
   for (int y = 0; y < height; ++y) {
     RAWToARGBRow(src_raw, dst_argb, width);
@@ -415,6 +420,11 @@ int RGB24ToARGB(const uint8* src_rgb24, int src_stride_rgb24,
       IS_ALIGNED(width, 16) &&
       IS_ALIGNED(dst_argb, 16) && IS_ALIGNED(dst_stride_argb, 16)) {
     RGB24ToARGBRow = RGB24ToARGBRow_SSSE3;
+  }
+#endif
+#if defined(HAS_RGB24TOARGBROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+      RGB24ToARGBRow = RGB24ToARGBRow_DSPR2;
   }
 #endif
 
@@ -450,6 +460,11 @@ int RGB565ToARGB(const uint8* src_rgb565, int src_stride_rgb565,
     RGB565ToARGBRow = RGB565ToARGBRow_SSE2;
   }
 #endif
+#if defined(HAS_RGB565TOARGBROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+      RGB565ToARGBRow = RGB565ToARGBRow_DSPR2;
+  }
+#endif
 
   for (int y = 0; y < height; ++y) {
     RGB565ToARGBRow(src_rgb565, dst_argb, width);
@@ -483,6 +498,11 @@ int ARGB1555ToARGB(const uint8* src_argb1555, int src_stride_argb1555,
     ARGB1555ToARGBRow = ARGB1555ToARGBRow_SSE2;
   }
 #endif
+#if defined(HAS_ARGB1555TOARGBROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+      ARGB1555ToARGBRow = ARGB1555ToARGBRow_DSPR2;
+  }
+#endif
 
   for (int y = 0; y < height; ++y) {
     ARGB1555ToARGBRow(src_argb1555, dst_argb, width);
@@ -514,6 +534,11 @@ int ARGB4444ToARGB(const uint8* src_argb4444, int src_stride_argb4444,
       IS_ALIGNED(width, 8) &&
       IS_ALIGNED(dst_argb, 16) && IS_ALIGNED(dst_stride_argb, 16)) {
     ARGB4444ToARGBRow = ARGB4444ToARGBRow_SSE2;
+  }
+#endif
+#if defined(HAS_ARGB4444TOARGBROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+      ARGB4444ToARGBRow = ARGB4444ToARGBRow_DSPR2;
   }
 #endif
 

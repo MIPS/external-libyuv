@@ -796,6 +796,16 @@ void TransposePlane(const uint8* src, int src_stride,
     TransposeWx8 = TransposeWx8_FAST_SSSE3;
   }
 #endif
+#if defined(HAS_TRANSPOSEWX8_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2)) {
+    if (IS_ALIGNED(width, 4) &&
+        IS_ALIGNED(src, 4) && IS_ALIGNED(src_stride, 4)) {
+      TransposeWx8 = TransposeWx8_Fast_DSPR2;
+    } else {
+      TransposeWx8 = TransposeWx8_DSPR2;
+    }
+  }
+#endif
 
   // Work across the source in 8x8 tiles
   int i = height;
@@ -859,6 +869,13 @@ void RotatePlane180(const uint8* src, int src_stride,
     MirrorRow = MirrorRow_SSSE3;
   }
 #endif
+#if defined(HAS_MIRRORROW_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) &&
+      IS_ALIGNED(src, 4) && IS_ALIGNED(src_stride, 4) &&
+      IS_ALIGNED(dst, 4) && IS_ALIGNED(dst_stride, 4)) {
+    MirrorRow = MirrorRow_DSPR2;
+  }
+#endif
   void (*CopyRow)(const uint8* src, uint8* dst, int width) = CopyRow_C;
 #if defined(HAS_COPYROW_NEON)
   if (TestCpuFlag(kCpuHasNEON) && IS_ALIGNED(width, 64)) {
@@ -875,6 +892,11 @@ void RotatePlane180(const uint8* src, int src_stride,
       IS_ALIGNED(src, 16) && IS_ALIGNED(src_stride, 16) &&
       IS_ALIGNED(dst, 16) && IS_ALIGNED(dst_stride, 16)) {
     CopyRow = CopyRow_SSE2;
+  }
+#endif
+#if defined(HAS_COPYROW_MIPS)
+  if (TestCpuFlag(kCpuHasMIPS)) {
+    CopyRow = CopyRow_MIPS;
   }
 #endif
   if (width > kMaxStride) {
@@ -955,6 +977,12 @@ void TransposeUV(const uint8* src, int src_stride,
     TransposeUVWx8 = TransposeUVWx8_SSE2;
   }
 #endif
+#if defined(HAS_TRANSPOSEUVWX8_DSPR2)
+  if (TestCpuFlag(kCpuHasDSPR2) && IS_ALIGNED(width, 2) &&
+      IS_ALIGNED(src, 4) && IS_ALIGNED(src_stride, 4)) {
+    TransposeUVWx8 = TransposeUVWx8_DSPR2;
+  }
+#endif
 
   // Work through the source in 8x8 tiles.
   int i = height;
@@ -1024,6 +1052,12 @@ void RotateUV180(const uint8* src, int src_stride,
     MirrorRowUV = MirrorRowUV_SSSE3;
   }
 #endif
+// #if defined(HAS_MIRRORUVROW_DSPR2)
+//   if (TestCpuFlag(kCpuHasDSPR2) &&
+//       IS_ALIGNED(src, 4) && IS_ALIGNED(src_stride, 4)) {
+//     MirrorUVRow = MirrorUVRow_DSPR2;
+//   }
+// #endif
 
   dst_a += dst_stride_a * (height - 1);
   dst_b += dst_stride_b * (height - 1);
