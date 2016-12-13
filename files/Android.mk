@@ -57,3 +57,11 @@ LOCAL_MODULE := libyuv_static
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_WHOLE_STATIC_LIBRARIES := libyuv_static
+LOCAL_MODULE := libyuv
+LOCAL_SHARED_LIBRARIES := libjpeg
+
+include $(BUILD_SHARED_LIBRARY)
