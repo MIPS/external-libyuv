@@ -1,6 +1,7 @@
 fbarchard@google.com
-magjed@chromium.org
-torbjorng@chromium.org
+kjellander@google.com
+# magjed@chromium.org
+# torbjorng@chromium.org
 
 per-file *.gyp=kjellander@google.com
 per-file *.gn=kjellander@google.com
