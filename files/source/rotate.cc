@@ -26,8 +26,13 @@ void TransposePlane(const uint8* src, int src_stride,
                     uint8* dst, int dst_stride,
                     int width, int height) {
   int i = height;
+#if defined(HAS_TRANSPOSEWX16_MSA)
+  void (*TransposeWx16)(const uint8* src, int src_stride, uint8* dst,
+                        int dst_stride, int width) = TransposeWx16_C;
+#else
   void (*TransposeWx8)(const uint8* src, int src_stride,
                        uint8* dst, int dst_stride, int width) = TransposeWx8_C;
+#endif
 #if defined(HAS_TRANSPOSEWX8_NEON)
   if (TestCpuFlag(kCpuHasNEON)) {
     TransposeWx8 = TransposeWx8_NEON;
@@ -59,7 +64,24 @@ void TransposePlane(const uint8* src, int src_stride,
     }
   }
 #endif
+#if defined(HAS_TRANSPOSEWX16_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    TransposeWx16 = TransposeWx16_Any_MSA;
+    if (IS_ALIGNED(width, 16)) {
+      TransposeWx16 = TransposeWx16_MSA;
+    }
+  }
+#endif
 
+#if defined(HAS_TRANSPOSEWX16_MSA)
+  // Work across the source in 16x16 tiles
+  while (i >= 16) {
+    TransposeWx16(src, src_stride, dst, dst_stride, width);
+    src += 16 * src_stride;  // Go down 16 rows.
+    dst += 16;               // Move over 16 columns.
+    i -= 16;
+  }
+#else
   // Work across the source in 8x8 tiles
   while (i >= 8) {
     TransposeWx8(src, src_stride, dst, dst_stride, width);
@@ -67,6 +89,7 @@ void TransposePlane(const uint8* src, int src_stride,
     dst += 8;                 // Move over 8 columns.
     i -= 8;
   }
+#endif
 
   if (i > 0) {
     TransposeWxH_C(src, src_stride, dst, dst_stride, width, i);
@@ -141,6 +164,14 @@ void RotatePlane180(const uint8* src, int src_stride,
     MirrorRow = MirrorRow_DSPR2;
   }
 #endif
+#if defined(HAS_MIRRORROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    MirrorRow = MirrorRow_Any_MSA;
+    if (IS_ALIGNED(width, 64)) {
+      MirrorRow = MirrorRow_MSA;
+    }
+  }
+#endif
 #if defined(HAS_COPYROW_SSE2)
   if (TestCpuFlag(kCpuHasSSE2)) {
     CopyRow = IS_ALIGNED(width, 32) ? CopyRow_SSE2 : CopyRow_Any_SSE2;
@@ -186,10 +217,16 @@ void TransposeUV(const uint8* src, int src_stride,
                  uint8* dst_b, int dst_stride_b,
                  int width, int height) {
   int i = height;
+#if defined(HAS_TRANSPOSEUVWX16_MSA)
+  void (*TransposeUVWx16)(const uint8* src, int src_stride, uint8* dst_a,
+                          int dst_stride_a, uint8* dst_b, int dst_stride_b,
+                          int width) = TransposeUVWx16_C;
+#else
   void (*TransposeUVWx8)(const uint8* src, int src_stride,
                          uint8* dst_a, int dst_stride_a,
                          uint8* dst_b, int dst_stride_b,
                          int width) = TransposeUVWx8_C;
+#endif
 #if defined(HAS_TRANSPOSEUVWX8_NEON)
   if (TestCpuFlag(kCpuHasNEON)) {
     TransposeUVWx8 = TransposeUVWx8_NEON;
@@ -209,7 +246,26 @@ void TransposeUV(const uint8* src, int src_stride,
     TransposeUVWx8 = TransposeUVWx8_DSPR2;
   }
 #endif
+#if defined(HAS_TRANSPOSEUVWX16_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    TransposeUVWx16 = TransposeUVWx16_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      TransposeUVWx16 = TransposeUVWx16_MSA;
+    }
+  }
+#endif
 
+#if defined(HAS_TRANSPOSEUVWX16_MSA)
+  // Work through the source in 8x8 tiles.
+  while (i >= 16) {
+    TransposeUVWx16(src, src_stride, dst_a, dst_stride_a, dst_b, dst_stride_b,
+                    width);
+    src += 16 * src_stride;  // Go down 16 rows.
+    dst_a += 16;             // Move over 8 columns.
+    dst_b += 16;             // Move over 8 columns.
+    i -= 16;
+  }
+#else
   // Work through the source in 8x8 tiles.
   while (i >= 8) {
     TransposeUVWx8(src, src_stride,
@@ -221,6 +277,7 @@ void TransposeUV(const uint8* src, int src_stride,
     dst_b += 8;               // Move over 8 columns.
     i -= 8;
   }
+#endif
 
   if (i > 0) {
     TransposeUVWxH_C(src, src_stride,

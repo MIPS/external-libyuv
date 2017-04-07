@@ -235,6 +235,14 @@ int I420ToYUY2(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+#if defined(HAS_I422TOYUY2ROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToYUY2Row = I422ToYUY2Row_Any_MSA;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToYUY2Row = I422ToYUY2Row_MSA;
+    }
+  }
+#endif
 
   for (y = 0; y < height - 1; y += 2) {
     I422ToYUY2Row(src_y, src_u, src_v, dst_yuy2, width);
@@ -296,6 +304,14 @@ int I422ToUYVY(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+#if defined(HAS_I422TOUYVYROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToUYVYRow = I422ToUYVYRow_Any_MSA;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToUYVYRow = I422ToUYVYRow_MSA;
+    }
+  }
+#endif
 
   for (y = 0; y < height; ++y) {
     I422ToUYVYRow(src_y, src_u, src_v, dst_uyvy, width);
@@ -340,6 +356,14 @@ int I420ToUYVY(const uint8* src_y, int src_stride_y,
     I422ToUYVYRow = I422ToUYVYRow_Any_NEON;
     if (IS_ALIGNED(width, 16)) {
       I422ToUYVYRow = I422ToUYVYRow_NEON;
+    }
+  }
+#endif
+#if defined(HAS_I422TOUYVYROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToUYVYRow = I422ToUYVYRow_Any_MSA;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToUYVYRow = I422ToUYVYRow_MSA;
     }
   }
 #endif
@@ -507,6 +531,14 @@ static int I420ToRGBAMatrix(const uint8* src_y, int src_stride_y,
     I422ToRGBARow = I422ToRGBARow_DSPR2;
   }
 #endif
+#if defined(HAS_I422TORGBAROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToRGBARow = I422ToRGBARow_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      I422ToRGBARow = I422ToRGBARow_MSA;
+    }
+  }
+#endif
 
   for (y = 0; y < height; ++y) {
     I422ToRGBARow(src_y, src_u, src_v, dst_rgba, yuvconstants, width);
@@ -595,6 +627,14 @@ static int I420ToRGB24Matrix(const uint8* src_y, int src_stride_y,
     I422ToRGB24Row = I422ToRGB24Row_Any_NEON;
     if (IS_ALIGNED(width, 8)) {
       I422ToRGB24Row = I422ToRGB24Row_NEON;
+    }
+  }
+#endif
+#if defined(HAS_I422TORGB24ROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToRGB24Row = I422ToRGB24Row_Any_MSA;
+    if (IS_ALIGNED(width, 16)) {
+      I422ToRGB24Row = I422ToRGB24Row_MSA;
     }
   }
 #endif
@@ -689,6 +729,14 @@ int I420ToARGB1555(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+#if defined(HAS_I422TOARGB1555ROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToARGB1555Row = I422ToARGB1555Row_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      I422ToARGB1555Row = I422ToARGB1555Row_MSA;
+    }
+  }
+#endif
 
   for (y = 0; y < height; ++y) {
     I422ToARGB1555Row(src_y, src_u, src_v, dst_argb1555, &kYuvI601Constants,
@@ -752,6 +800,14 @@ int I420ToARGB4444(const uint8* src_y, int src_stride_y,
     }
   }
 #endif
+#if defined(HAS_I422TOARGB4444ROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToARGB4444Row = I422ToARGB4444Row_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      I422ToARGB4444Row = I422ToARGB4444Row_MSA;
+    }
+  }
+#endif
 
   for (y = 0; y < height; ++y) {
     I422ToARGB4444Row(src_y, src_u, src_v, dst_argb4444, &kYuvI601Constants,
@@ -811,6 +867,14 @@ int I420ToRGB565(const uint8* src_y, int src_stride_y,
     I422ToRGB565Row = I422ToRGB565Row_Any_NEON;
     if (IS_ALIGNED(width, 8)) {
       I422ToRGB565Row = I422ToRGB565Row_NEON;
+    }
+  }
+#endif
+#if defined(HAS_I422TORGB565ROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToRGB565Row = I422ToRGB565Row_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      I422ToRGB565Row = I422ToRGB565Row_MSA;
     }
   }
 #endif
@@ -896,6 +960,14 @@ int I420ToRGB565Dither(const uint8* src_y, int src_stride_y,
     I422ToARGBRow = I422ToARGBRow_DSPR2;
   }
 #endif
+#if defined(HAS_I422TOARGBROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToARGBRow = I422ToARGBRow_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      I422ToARGBRow = I422ToARGBRow_MSA;
+    }
+  }
+#endif
 #if defined(HAS_ARGBTORGB565DITHERROW_SSE2)
   if (TestCpuFlag(kCpuHasSSE2)) {
     ARGBToRGB565DitherRow = ARGBToRGB565DitherRow_Any_SSE2;
@@ -917,6 +989,14 @@ int I420ToRGB565Dither(const uint8* src_y, int src_stride_y,
     ARGBToRGB565DitherRow = ARGBToRGB565DitherRow_Any_NEON;
     if (IS_ALIGNED(width, 8)) {
       ARGBToRGB565DitherRow = ARGBToRGB565DitherRow_NEON;
+    }
+  }
+#endif
+#if defined(HAS_ARGBTORGB565DITHERROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    ARGBToRGB565DitherRow = ARGBToRGB565DitherRow_Any_MSA;
+    if (IS_ALIGNED(width, 8)) {
+      ARGBToRGB565DitherRow = ARGBToRGB565DitherRow_MSA;
     }
   }
 #endif
