@@ -76,6 +76,18 @@ static void ScaleARGBDown2(int src_width, int src_height,
     }
   }
 #endif
+#if defined(HAS_SCALEARGBROWDOWN2_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    ScaleARGBRowDown2 = filtering == kFilterNone ? ScaleARGBRowDown2_Any_MSA :
+        (filtering == kFilterLinear ? ScaleARGBRowDown2Linear_Any_MSA :
+        ScaleARGBRowDown2Box_Any_MSA);
+    if (IS_ALIGNED(dst_width, 4)) {
+      ScaleARGBRowDown2 = filtering == kFilterNone ? ScaleARGBRowDown2_MSA :
+          (filtering == kFilterLinear ? ScaleARGBRowDown2Linear_MSA :
+          ScaleARGBRowDown2Box_MSA);
+    }
+  }
+#endif
 
   if (filtering == kFilterLinear) {
     src_stride = 0;
@@ -172,6 +184,16 @@ static void ScaleARGBDownEven(int src_width, int src_height,
     }
   }
 #endif
+#if defined(HAS_SCALEARGBROWDOWNEVEN_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    ScaleARGBRowDownEven = filtering ? ScaleARGBRowDownEvenBox_Any_MSA :
+        ScaleARGBRowDownEven_Any_MSA;
+    if (IS_ALIGNED(dst_width, 4)) {
+      ScaleARGBRowDownEven = filtering ? ScaleARGBRowDownEvenBox_MSA :
+          ScaleARGBRowDownEven_MSA;
+    }
+  }
+#endif
 
   if (filtering == kFilterLinear) {
     src_stride = 0;
@@ -240,6 +262,14 @@ static void ScaleARGBBilinearDown(int src_width, int src_height,
     InterpolateRow = InterpolateRow_Any_DSPR2;
     if (IS_ALIGNED(clip_src_width, 4)) {
       InterpolateRow = InterpolateRow_DSPR2;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    InterpolateRow = InterpolateRow_Any_MSA;
+    if (IS_ALIGNED(clip_src_width, 32)) {
+      InterpolateRow = InterpolateRow_MSA;
     }
   }
 #endif
@@ -328,6 +358,14 @@ static void ScaleARGBBilinearUp(int src_width, int src_height,
   if (TestCpuFlag(kCpuHasDSPR2) &&
       IS_ALIGNED(dst_argb, 4) && IS_ALIGNED(dst_stride, 4)) {
     InterpolateRow = InterpolateRow_DSPR2;
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    InterpolateRow = InterpolateRow_Any_MSA;
+    if (IS_ALIGNED(dst_width, 8)) {
+      InterpolateRow = InterpolateRow_MSA;
+    }
   }
 #endif
   if (src_width >= 32768) {
@@ -474,6 +512,14 @@ static void ScaleYUVToARGBBilinearUp(int src_width, int src_height,
     I422ToARGBRow = I422ToARGBRow_DSPR2;
   }
 #endif
+#if defined(HAS_I422TOARGBROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    I422ToARGBRow = I422ToARGBRow_Any_MSA;
+    if (IS_ALIGNED(src_width, 8)) {
+      I422ToARGBRow = I422ToARGBRow_MSA;
+    }
+  }
+#endif
 
   void (*InterpolateRow)(uint8* dst_argb, const uint8* src_argb,
       ptrdiff_t src_stride, int dst_width, int source_y_fraction) =
@@ -506,6 +552,14 @@ static void ScaleYUVToARGBBilinearUp(int src_width, int src_height,
   if (TestCpuFlag(kCpuHasDSPR2) &&
       IS_ALIGNED(dst_argb, 4) && IS_ALIGNED(dst_stride_argb, 4)) {
     InterpolateRow = InterpolateRow_DSPR2;
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    InterpolateRow = InterpolateRow_Any_MSA;
+    if (IS_ALIGNED(dst_width, 8)) {
+      InterpolateRow = InterpolateRow_MSA;
+    }
   }
 #endif
 
