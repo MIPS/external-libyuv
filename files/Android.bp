@@ -1,5 +1,9 @@
 cc_library {
     name: "libyuv",
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
 
     srcs: [
         "source/compare.cc",
