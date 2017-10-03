@@ -53,6 +53,7 @@ cc_library {
 
     cflags: [
         "-Wall",
+        "-Werror",
         "-Wno-unused-parameter",
         "-fexceptions",
         "-DHAVE_JPEG",
