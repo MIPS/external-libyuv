@@ -119,7 +119,7 @@ void TransposeWx8_Fast_DSPR2(const uint8* src,
       "addu             $t5, $t4, %[src_stride]          \n"
       "addu             $t6, $t2, $t4                    \n"
 
-      "srl              $AT, %[width], 0x2               \n"
+      "srl              $at, %[width], 0x2               \n"
       "andi             $t0, %[dst], 0x3                 \n"
       "andi             $t1, %[dst_stride], 0x3          \n"
       "or               $t0, $t0, $t1                    \n"
@@ -200,10 +200,10 @@ void TransposeWx8_Fast_DSPR2(const uint8* src,
       "sw              $s7, 0($s2)                       \n"
       "sw              $t9, 4($s2)                       \n"
 
-      "addiu            $AT, -1                          \n"
+      "addiu            $at, -1                          \n"
       "addiu            %[src], 4                        \n"
 
-      "bnez             $AT, 1b                          \n"
+      "bnez             $at, 1b                          \n"
       " addu            %[dst], $s2, %[dst_stride]       \n"
       "b                2f                               \n"
       // dst + dst_stride unaligned
@@ -289,10 +289,10 @@ void TransposeWx8_Fast_DSPR2(const uint8* src,
       "swr              $t9, 4($s2)                      \n"
       "swl              $t9, 7($s2)                      \n"
 
-      "addiu            $AT, -1                          \n"
+      "addiu            $at, -1                          \n"
       "addiu            %[src], 4                        \n"
 
-      "bnez             $AT, 11b                         \n"
+      "bnez             $at, 11b                         \n"
       " addu            %[dst], $s2, %[dst_stride]       \n"
       "2:                                                \n"
       ".set pop                                          \n"
